@@ -1,8 +1,12 @@
 name: Test Build
 
 on:
+  push:
+    branches: [ main ]
   pull_request:
-  workflow_dispatch:  # 支持手动触发
+    branches: [ main ]
+  workflow_dispatch:
+
 
 jobs:
   build:

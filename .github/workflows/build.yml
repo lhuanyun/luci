@@ -20,11 +20,11 @@ jobs:
         with:
           fetch-depth: 0
           repository: lhuanyun/luci
-          ref: master
+          ref: main
 
       - name: Determine branch name
         run: |
-          BRANCH="master"
+          BRANCH="main"
           echo "Building for $BRANCH"
           echo "BRANCH=$BRANCH" >> $GITHUB_ENV
 

@@ -1,0 +1,58 @@
+name: Test Build
+
+on:
+  pull_request:
+  workflow_dispatch:  # 支持手动触发
+
+jobs:
+  build:
+    name: Test ${{ matrix.arch }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: aarch64_generic
+            target: arm64
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          repository: lhuanyun/luci
+          ref: master
+
+      - name: Determine branch name
+        run: |
+          BRANCH="master"
+          echo "Building for $BRANCH"
+          echo "BRANCH=$BRANCH" >> $GITHUB_ENV
+
+      - name: Set package to build
+        run: |
+          PACKAGES="luci-app-commands"
+          echo "Building $PACKAGES"
+          echo "PACKAGES=$PACKAGES" >> $GITHUB_ENV
+
+      - name: Build
+        uses: openwrt/gh-action-sdk@v5
+        env:
+          ARCH: ${{ matrix.arch }}-${{ env.BRANCH }}
+          FEEDNAME: packages_ci
+
+      - name: Move created packages to project dir
+        run: |
+          mkdir -p output
+          find bin/packages/${{ matrix.arch }}/packages_ci -name 'luci-app-commands*.ipk' -exec cp {} output/ \;
+
+      - name: Store packages
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.arch}}-luci-app-commands
+          path: "output/*.ipk"
+
+      - name: Store logs
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.arch}}-logs
+          path: logs/

@@ -34,7 +34,7 @@ jobs:
 
       - name: Set package to build
         run: |
-          PACKAGES="luci-app-commands luci-base"
+          PACKAGES="luci-app-commands luci-base luci-i18n-commands-zh-cn"
           echo "Building $PACKAGES"
           echo "PACKAGES=$PACKAGES" >> $GITHUB_ENV
 
@@ -49,6 +49,17 @@ jobs:
           mkdir -p output
           find bin/packages/${{ matrix.arch }}/packages_ci -name 'luci-*.ipk' -exec cp {} output/ \;
 
+      - name: Debug - List package contents
+        run: |
+          for ipk in output/*.ipk; do
+            echo "Contents of $ipk:"
+            ar x "$ipk" data.tar.gz
+            tar -tvzf data.tar.gz | grep -E 'luci|commands'
+            echo "Full content of $ipk:"
+            tar -tvzf data.tar.gz
+            rm data.tar.gz
+          done
+
       - name: Store packages
         uses: actions/upload-artifact@v4
         with:
@@ -60,12 +71,3 @@ jobs:
         with:
           name: ${{ matrix.arch}}-logs
           path: logs/
-
-      - name: Debug - List package contents
-        run: |
-          for ipk in output/*.ipk; do
-            echo "Contents of $ipk:"
-            ar x "$ipk" data.tar.gz
-            tar -tvzf data.tar.gz | grep -E 'luci|commands'
-            rm data.tar.gz
-          done
